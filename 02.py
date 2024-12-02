@@ -1,5 +1,5 @@
+import itertools
 import sys
-from itertools import chain, combinations, pairwise
 
 
 def parse_input(puzzle_input):
@@ -12,10 +12,11 @@ def parse_input(puzzle_input):
 
 
 def is_safe(report):
-    diffs = [b - a for a, b in pairwise(report)]
-    return (all(v > 0 for v in diffs) or all(v < 0 for v in diffs)) and all(
-        1 <= abs(v) <= 3 for v in diffs
-    )
+    sign = 1 if report[1] > report[0] else -1
+    for a, b in itertools.pairwise(report):
+        if not (1 <= sign * (b - a) <= 3):
+            return False
+    return True
 
 
 def part_one(reports):
@@ -25,9 +26,12 @@ def part_one(reports):
 def part_two(reports):
     safe = 0
     for report in reports:
-        n = len(report)
-        for attempt in chain([report], combinations(report, n - 1)):
-            if is_safe(attempt):
+        if is_safe(report):
+            safe += 1
+            continue
+
+        for i, _ in enumerate(report):
+            if is_safe(report[:i] + report[i + 1 :]):
                 safe += 1
                 break
 
