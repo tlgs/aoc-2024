@@ -1,4 +1,3 @@
-import itertools
 import sys
 
 
@@ -6,41 +5,30 @@ def parse_input(puzzle_input):
     grid = {}
     for y, line in enumerate(puzzle_input.splitlines()):
         for x, c in enumerate(line):
-            grid[complex(x, y)] = c
+            grid[x + y * 1j] = c
 
     return (grid,)
 
 
 def part_one(grid):
-    transitions = dict(itertools.pairwise("XMAS"))
+    target = tuple("XMAS")
     deltas = [-1 - 1j, -1j, 1 - 1j, -1, 1, -1 + 1j, 1j, 1 + 1j]
 
-    total = 0
-    todo = [(t, d) for t, c in grid.items() for d in deltas if c == "X"]
-    while todo:
-        t, d = todo.pop()
-
-        v = grid[t]
-        if v == "S":
-            total += 1
-        elif grid.get(t + d) == transitions[v]:
-            todo.append((t + d, d))
-
-    return total
+    candidates = [
+        tuple(grid.get(v + d * i) for i in range(4)) for v in grid for d in deltas
+    ]
+    return candidates.count(target)
 
 
 def part_two(grid):
-    deltas = [-1 - 1j, 1 - 1j, -1 + 1j, 1 + 1j]
+    targets = {tuple("SAM"), tuple("MAS")}
+    deltas = [-1 - 1j, 0, 1 + 1j]
 
     total = 0
-    for t in [t for t, c in grid.items() if c == "A"]:
-        a, b, c, d = [grid.get(t + d) for d in deltas]
-        if any(v is None or v == "X" for v in (a, b, c, d)):
-            continue
-
-        fst = (a == "M" and d == "S") or (a == "S" and d == "M")
-        snd = (b == "M" and c == "S") or (b == "S" and c == "M")
-        total += fst and snd
+    for v in grid:
+        back = tuple(grid.get(v + d) for d in deltas)
+        fwd = tuple(grid.get(v + d.conjugate()) for d in deltas)
+        total += {back, fwd} <= targets
 
     return total
 
