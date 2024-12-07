@@ -1,85 +1,65 @@
-import itertools
 import sys
 
 
 def parse_input(puzzle_input):
-    lines = puzzle_input.splitlines()
-    dims = len(lines[0]), len(lines)
-
     obstacles, guard = set(), None
-    for y, line in enumerate(lines):
+    for y, line in enumerate(puzzle_input.splitlines()):
         for x, c in enumerate(line):
             match c:
                 case ".":
                     pass
                 case "#":
-                    obstacles.add((x, y))
+                    obstacles.add(complex(x, y))
                 case "^":
-                    guard = (x, y)
+                    guard = complex(x, y)
 
-    return dims, obstacles, guard
+    return (x + 1, y + 1), obstacles, guard
 
 
 def part_one(dims, obstacles, guard):
-    xmax, ymax = dims
-    directions = itertools.cycle([(0, -1), (1, 0), (0, 1), (-1, 0)])
+    pos, d, seen = guard, -1j, set()
+    while -1 < pos.real < dims[0] and -1 < pos.imag < dims[1]:
+        seen.add(pos)
 
-    seen = set()
-    (x, y), curr = guard, next(directions)
-    while -1 < x < xmax and -1 < y < ymax:
-        seen.add((x, y))
-
-        nxt = (x + curr[0], y + curr[1])
-        if nxt in obstacles:
-            curr = next(directions)
+        if (nxt := pos + d) in obstacles:
+            d *= 1j
         else:
-            x, y = nxt
+            pos = nxt
 
     return len(seen)
 
 
 def part_two(dims, obstacles, guard):
-    xmax, ymax = dims
-    directions = itertools.cycle([(0, -1), (1, 0), (0, 1), (-1, 0)])
+    pos, d, candidates = guard, -1j, {}
+    while -1 < pos.real < dims[0] and -1 < pos.imag < dims[1]:
+        if pos not in candidates:
+            candidates[pos] = (pos - d, d)
 
-    candidates = {}
-    (x, y), curr = guard, next(directions)
-    while -1 < x < xmax and -1 < y < ymax:
-        nxt = (x + curr[0], y + curr[1])
-        if nxt in obstacles:
-            curr = next(directions)
+        if (nxt := pos + d) in obstacles:
+            d *= 1j
         else:
-            if (
-                nxt not in candidates.keys() | {guard}
-                and -1 < nxt[0] < xmax
-                and -1 < nxt[1] < ymax
-            ):
-                candidates[nxt] = (x, y, curr)
-            x, y = nxt
+            pos = nxt
+
+    candidates.pop(guard)
 
     total = 0
-    for obstacle, start in candidates.items():
-        x, y, curr = start
-        while next(directions) != curr:
-            pass
-
-        obstacles.add(obstacle)
+    for tmp, (pos, d) in candidates.items():
+        obstacles.add(tmp)
 
         seen = set()
-        while -1 < x < xmax and -1 < y < ymax:
-            if (x, y, curr) in seen:
+        while -1 < pos.real < dims[0] and -1 < pos.imag < dims[1]:
+            seen.add((pos, d))
+
+            nxt = pos + d
+            if (nxt, d) in seen:
                 total += 1
                 break
-
-            seen.add((x, y, curr))
-
-            nxt = (x + curr[0], y + curr[1])
-            if nxt in obstacles:
-                curr = next(directions)
+            elif nxt in obstacles:
+                d *= 1j
             else:
-                x, y = nxt
+                pos = nxt
 
-        obstacles.remove(obstacle)
+        obstacles.remove(tmp)
 
     return total
 
