@@ -42,32 +42,36 @@ def part_two(dims, obstacles, guard):
     xmax, ymax = dims
     directions = itertools.cycle([(0, -1), (1, 0), (0, 1), (-1, 0)])
 
-    candidates = set()
+    candidates = {}
     (x, y), curr = guard, next(directions)
     while -1 < x < xmax and -1 < y < ymax:
-        candidates.add((x, y))
-
         nxt = (x + curr[0], y + curr[1])
         if nxt in obstacles:
             curr = next(directions)
         else:
+            if (
+                nxt not in candidates.keys() | {guard}
+                and -1 < nxt[0] < xmax
+                and -1 < nxt[1] < ymax
+            ):
+                candidates[nxt] = (x, y, curr)
             x, y = nxt
 
     total = 0
-    for candidate in candidates - {guard}:
-        x, y = guard
-        while curr != (0, -1):
-            curr = next(directions)
+    for obstacle, start in candidates.items():
+        x, y, curr = start
+        while next(directions) != curr:
+            pass
 
-        obstacles.add(candidate)
+        obstacles.add(obstacle)
 
         seen = set()
         while -1 < x < xmax and -1 < y < ymax:
-            if (x, y, *curr) in seen:
+            if (x, y, curr) in seen:
                 total += 1
                 break
 
-            seen.add((x, y, *curr))
+            seen.add((x, y, curr))
 
             nxt = (x + curr[0], y + curr[1])
             if nxt in obstacles:
@@ -75,7 +79,7 @@ def part_two(dims, obstacles, guard):
             else:
                 x, y = nxt
 
-        obstacles.remove(candidate)
+        obstacles.remove(obstacle)
 
     return total
 
