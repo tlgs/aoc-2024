@@ -10,5 +10,5 @@
 | 6   | [Guard Gallivant](06.py)       | -               |
 | 7   | Bridge Repair                  | -               |
 | 8   | [Resonant Collinearity](08.py) | -               |
-| 9   | Disk Fragmenter                | -               |
+| 9   | [Disk Fragmenter](09.py)       | -               |
 | 10  | [Hoof It](10.py)               | Graph traversal |
