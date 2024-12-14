@@ -21,7 +21,6 @@ def part_one(robots, dims=(101, 103)):
     mx, my = dims[0] // 2, dims[1] // 2
 
     quadrants = [0] * 4
-    idx = {(True, False): 0, (True, True): 1, (False, True): 2, (False, False): 3}
     for robot in robots:
         px, py, vx, vy = robot
         x = (px + 100 * vx) % dims[0]
@@ -30,7 +29,7 @@ def part_one(robots, dims=(101, 103)):
         if x == mx or y == my:
             continue
 
-        quadrants[idx[x > mx, y > mx]] += 1
+        quadrants[2 * (x > mx) + (y > mx)] += 1
 
     return math.prod(quadrants)
 
@@ -38,12 +37,11 @@ def part_one(robots, dims=(101, 103)):
 def part_two(robots, dims=(101, 103)):
     for seconds in itertools.count(start=1):
         positions = set()
-        for i, robot in enumerate(robots):
+        for robot in robots:
             px, py, vx, vy = robot
-            x = (px + vx) % dims[0]
-            y = (py + vy) % dims[1]
+            x = (px + seconds * vx) % dims[0]
+            y = (py + seconds * vy) % dims[1]
 
-            robots[i] = (x, y, vx, vy)
             positions.add((x, y))
 
         # count robots in a / or \ pattern; stop if more than 25%
