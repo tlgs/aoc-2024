@@ -1,6 +1,5 @@
 import math
 import sys
-from collections import Counter
 from functools import cache
 
 
@@ -10,33 +9,28 @@ def parse_input(puzzle_input):
 
 
 @cache
-def nxt(stone):
-    if stone == 0:
-        return (1,)
+def blink(v, n):
+    if n == 0:
+        return 1
 
-    digits = int(math.log10(stone)) + 1
+    if v == 0:
+        return blink(1, n - 1)
+
+    digits = int(math.log10(v)) + 1
     q, odd = divmod(digits, 2)
     if not odd:
-        return divmod(stone, 10**q)
+        left, right = divmod(v, 10**q)
+        return blink(left, n - 1) + blink(right, n - 1)
 
-    return (stone * 2024,)
-
-
-def part_one(stones, blink=25):
-    counts = Counter(stones)
-    for _ in range(blink):
-        tmp = Counter()
-        for value, n in counts.items():
-            for next_value in nxt(value):
-                tmp[next_value] += n
-
-        counts = tmp
-
-    return counts.total()
+    return blink(v * 2024, n - 1)
 
 
-def part_two(stones, blink=75):
-    return part_one(stones, blink)
+def part_one(stones, n=25):
+    return sum(blink(stone, n) for stone in stones)
+
+
+def part_two(stones, n=75):
+    return sum(blink(stone, n) for stone in stones)
 
 
 class Test:
