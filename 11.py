@@ -1,7 +1,7 @@
-import collections
-import functools
 import math
 import sys
+from collections import Counter
+from functools import cache
 
 
 def parse_input(puzzle_input):
@@ -9,27 +9,28 @@ def parse_input(puzzle_input):
     return (stones,)
 
 
-@functools.cache
+@cache
 def nxt(stone):
     if stone == 0:
         return (1,)
 
     digits = int(math.log10(stone)) + 1
-    if digits % 2 == 0:
-        return divmod(stone, 10 ** (digits / 2))
+    q, odd = divmod(digits, 2)
+    if not odd:
+        return divmod(stone, 10**q)
 
     return (stone * 2024,)
 
 
 def part_one(stones, blink=25):
-    counts = collections.Counter(stones)
+    counts = Counter(stones)
     for _ in range(blink):
-        new = collections.Counter()
-        for k, v in counts.items():
-            for w in nxt(k):
-                new[w] += v
+        tmp = Counter()
+        for value, n in counts.items():
+            for next_value in nxt(value):
+                tmp[next_value] += n
 
-        counts = new
+        counts = tmp
 
     return counts.total()
 
