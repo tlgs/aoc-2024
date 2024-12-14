@@ -37,22 +37,26 @@ def part_one(robots, dims=(101, 103)):
 
 def part_two(robots, dims=(101, 103)):
     for seconds in itertools.count(start=1):
-        grid = {}
+        positions = set()
         for i, robot in enumerate(robots):
-            px, py = (robot[0] + robot[2]) % dims[0], (robot[1] + robot[3]) % dims[1]
-            robots[i] = (px, py, robot[2], robot[3])
+            px, py, vx, vy = robot
+            x = (px + vx) % dims[0]
+            y = (py + vy) % dims[1]
 
-            grid[px, py] = "#"
+            robots[i] = (x, y, vx, vy)
+            positions.add((x, y))
 
-        slope = 0
-        for px, py, _, _ in robots:
-            slope += {(px - 1, py - 1), (px + 1, py + 1)} <= grid.keys() or {
-                (px + 1, py - 1),
-                (px - 1, py + 1),
-            } <= grid.keys()
+        # count robots in a / or \ pattern; stop if more than 25%
+        found = 0
+        for x, y in positions:
+            bck = {(x - 1, y - 1), (x + 1, y + 1)}
+            fwd = {(x + 1, y - 1), (x - 1, y + 1)}
+            found += bck <= positions or fwd <= positions
 
-        if slope > len(robots) / 4:
+        if found / len(robots) > 0.25:
             return seconds
+
+    raise RuntimeError
 
 
 class Test:
